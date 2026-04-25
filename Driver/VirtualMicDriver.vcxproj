@@ -50,18 +50,25 @@
       <WppEnabled>false</WppEnabled>
       <PreprocessorDefinitions>_DEBUG;_AMD64_;AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>portcls.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WppEnabled>false</WppEnabled>
       <PreprocessorDefinitions>NDEBUG;_AMD64_;AMD64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>portcls.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SysvadMiniport.cpp" />
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SysvadMiniport.h" />
