@@ -24,32 +24,40 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Install Windows Driver Kit (WDK)
-        # Required to build the .sys kernel driver
-        uses: neilenns/setup-wdk@v2 
+        # Required to build the .sys kernel driver. Installing via winget.
+        run: |
+          winget install --id Microsoft.WindowsWDK.11 --exact --accept-package-agreements --accept-source-agreements
+          # The WDK might require the SDK as well, but windows-latest usually has it.
+          # We might need to refresh the environment or specify the path if msbuild doesn't find it.
 
       - name: Compile Virtual Audio Driver (Kernel Mode)
         run: |
           echo "⚠️ CRITICAL: ALWAYS ON BUILD TEST THE AUDIO DRIVER TO MAKE SURE THAT IT DOES NOT BSOD AND FUCK THE ENTIRE PC! ⚠️"
           
           # Build the C++ Driver Solution
+          # We specify the target to ensure the driver project is built.
           msbuild Driver/VirtualMicDriver.sln /p:Configuration=Release /p:Platform=x64
-          
-          # Test-sign the driver locally for development use
-          # Note: signtool might need a certificate. For dev CI, we might skip or use a self-signed one if setup-wdk provides it.
-          # signtool sign /v /fd SHA256 /a /s PrivateCertStore Driver/x64/Release/VirtualMic.sys
 
       - name: Package Release Suite
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path publish/Release
+          $releaseDir = "publish/Release"
+          New-Item -ItemType Directory -Force -Path $releaseDir
           
-          # Copy Kernel Driver Binaries & INF (assuming standard MSBuild output path)
-          Copy-Item Driver/x64/Release/VirtualMicDriver/VirtualMic.sys publish/Release/ -ErrorAction SilentlyContinue
-          Copy-Item Driver/x64/Release/VirtualMic.sys publish/Release/ -ErrorAction SilentlyContinue
-          Copy-Item Driver/VirtualMic.inf publish/Release/
+          # Search for the .sys file to be robust against varying output paths
+          $sysFile = Get-ChildItem -Path "Driver" -Filter "VirtualMic.sys" -Recurse | Select-Object -First 1
+          if ($sysFile) {
+              Copy-Item $sysFile.FullName $releaseDir/
+              Write-Host "Found and copied: $($sysFile.FullName)"
+          } else {
+              Write-Error "VirtualMic.sys not found!"
+          }
+          
+          # Copy INF
+          Copy-Item "Driver/VirtualMic.inf" $releaseDir/
           
           # Archive Everything
-          Compress-Archive -Path publish/Release/* -DestinationPath VirtualMic-Suite.zip
+          Compress-Archive -Path "$releaseDir/*" -DestinationPath VirtualMic-Suite.zip
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
