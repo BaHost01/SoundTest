@@ -1,0 +1,59 @@
+name: Build VirtualMic & WDM Driver
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install Windows Driver Kit (WDK)
+        # Required to build the .sys kernel driver
+        uses: neilenns/setup-wdk@v2 
+
+      - name: Compile Virtual Audio Driver (Kernel Mode)
+        run: |
+          echo "⚠️ CRITICAL: ALWAYS ON BUILD TEST THE AUDIO DRIVER TO MAKE SURE THAT IT DOES NOT BSOD AND FUCK THE ENTIRE PC! ⚠️"
+          
+          # Build the C++ Driver Solution
+          msbuild Driver/VirtualMicDriver.sln /p:Configuration=Release /p:Platform=x64
+          
+          # Test-sign the driver locally for development use
+          # Note: signtool might need a certificate. For dev CI, we might skip or use a self-signed one if setup-wdk provides it.
+          # signtool sign /v /fd SHA256 /a /s PrivateCertStore Driver/x64/Release/VirtualMic.sys
+
+      - name: Package Release Suite
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path publish/Release
+          
+          # Copy Kernel Driver Binaries & INF (assuming standard MSBuild output path)
+          Copy-Item Driver/x64/Release/VirtualMicDriver/VirtualMic.sys publish/Release/ -ErrorAction SilentlyContinue
+          Copy-Item Driver/x64/Release/VirtualMic.sys publish/Release/ -ErrorAction SilentlyContinue
+          Copy-Item Driver/VirtualMic.inf publish/Release/
+          
+          # Archive Everything
+          Compress-Archive -Path publish/Release/* -DestinationPath VirtualMic-Suite.zip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VirtualMic-Suite
+          path: VirtualMic-Suite.zip
+          retention-days: 30

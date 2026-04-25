@@ -1,0 +1,45 @@
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = MEDIA
+ClassGuid   = {4d36e96c-e325-11ce-bfc1-08002be10318}
+Provider    = %ManufacturerName%
+CatalogFile = VirtualMic.cat
+DriverVer   = 04/25/2026,1.0.0.0
+PnpLockdown = 1
+
+[DestinationDirs]
+DefaultDestDir = 13
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+VirtualMic.sys = 1,,
+
+[Manufacturer]
+%ManufacturerName% = Standard,NTamd64
+
+[Standard.NTamd64]
+%VirtualMic.DeviceDesc% = VirtualMic_Device, Root\VirtualMic
+
+[VirtualMic_Device.NT]
+CopyFiles = VirtualMic_Device.NT.CopyFiles
+
+[VirtualMic_Device.NT.CopyFiles]
+VirtualMic.sys
+
+[VirtualMic_Device.NT.Services]
+AddService = VirtualMic, 0x00000002, VirtualMic_Service_Inst
+
+[VirtualMic_Service_Inst]
+DisplayName    = %VirtualMic.ServiceDesc%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %13%\VirtualMic.sys
+
+[Strings]
+ManufacturerName = "VirtualMic Project"
+DiskName = "VirtualMic Installation Disk"
+VirtualMic.DeviceDesc = "Virtual Audio Microphone Device"
+VirtualMic.ServiceDesc = "VirtualMic Kernel Driver"
