@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <WdkVersion>10.0.26100.2451</WdkVersion>
+    <WdkVersion>10.0.26100.1</WdkVersion>
   </PropertyGroup>
 
   <!-- Import WDK Props -->
