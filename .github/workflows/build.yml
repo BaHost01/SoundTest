@@ -20,15 +20,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore WDK NuGet Packages
+        run: nuget restore packages.config -PackagesDirectory packages
+
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
-
-      - name: Install Windows Driver Kit (WDK)
-        # Required to build the .sys kernel driver. Installing via winget.
-        run: |
-          winget install --id Microsoft.WindowsWDK.11 --exact --accept-package-agreements --accept-source-agreements
-          # The WDK might require the SDK as well, but windows-latest usually has it.
-          # We might need to refresh the environment or specify the path if msbuild doesn't find it.
 
       - name: Compile Virtual Audio Driver (Kernel Mode)
         run: |
@@ -36,7 +35,7 @@ jobs:
           
           # Build the C++ Driver Solution
           # We specify the target to ensure the driver project is built.
-          msbuild Driver/VirtualMicDriver.sln /p:Configuration=Release /p:Platform=x64
+          msbuild Driver/VirtualMicDriver.sln /p:Configuration=Release /p:Platform=x64 /p:WDKBinRoot=packages\Microsoft.Windows.WDK.x64.10.0.26100.2451\build\native\bin
 
       - name: Package Release Suite
         shell: pwsh
