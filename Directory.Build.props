@@ -1,11 +1,12 @@
 <Project>
   <PropertyGroup>
     <WdkVersion>10.0.26100.1</WdkVersion>
+    <WdkPackageRoot>$(MSBuildThisFileDirectory)packages\Microsoft.Windows.WDK.x64.$(WdkVersion)</WdkPackageRoot>
   </PropertyGroup>
 
   <!-- Import WDK Props -->
-  <Import Project="$(MSBuildThisFileDirectory)packages\Microsoft.Windows.WDK.x64.$(WdkVersion)\build\native\Microsoft.Windows.WDK.x64.props" 
-          Condition="Exists('$(MSBuildThisFileDirectory)packages\Microsoft.Windows.WDK.x64.$(WdkVersion)\build\native\Microsoft.Windows.WDK.x64.props')" />
+  <Import Project="$(WdkPackageRoot)\build\native\Microsoft.Windows.WDK.x64.props" 
+          Condition="Exists('$(WdkPackageRoot)\build\native\Microsoft.Windows.WDK.x64.props')" />
 
   <!-- Import SDK Props -->
   <Import Project="$(MSBuildThisFileDirectory)packages\Microsoft.Windows.SDK.CPP.$(WdkVersion)\build\native\Microsoft.Windows.SDK.CPP.props" 
@@ -15,7 +16,12 @@
           Condition="Exists('$(MSBuildThisFileDirectory)packages\Microsoft.Windows.SDK.CPP.x64.$(WdkVersion)\build\native\Microsoft.Windows.SDK.CPP.x64.props')" />
 
   <PropertyGroup>
-    <!-- Ensure MSBuild knows where the WDK is if it's not installed globally -->
-    <WDKContentRoot Condition="'$(WDKContentRoot)' == ''">$(MSBuildThisFileDirectory)packages\Microsoft.Windows.WDK.x64.$(WdkVersion)\build\native\</WDKContentRoot>
+    <!-- WDK Tools Path -->
+    <!-- The NuGet package puts tools in the tools\bin directory -->
+    <WDKBinRoot Condition="'$(WDKBinRoot)' == ''">$(WdkPackageRoot)\tools\bin\</WDKBinRoot>
+    <WdkContentRoot Condition="'$(WdkContentRoot)' == ''">$(WdkPackageRoot)\build\native\</WdkContentRoot>
+    
+    <!-- Disable StampInf if it continues to fail, but let's try setting the path first -->
+    <!-- <StampInf>false</StampInf> -->
   </PropertyGroup>
 </Project>
