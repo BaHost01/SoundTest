@@ -21,7 +21,11 @@
     <WDKBinRoot Condition="'$(WDKBinRoot)' == ''">$(WdkPackageRoot)\tools\bin\</WDKBinRoot>
     <WdkContentRoot Condition="'$(WdkContentRoot)' == ''">$(WdkPackageRoot)\build\native\</WdkContentRoot>
     
-    <!-- Disable StampInf if it continues to fail, but let's try setting the path first -->
-    <!-- <StampInf>false</StampInf> -->
+    <!-- Specific tool paths for common WDK tasks -->
+    <StampInfToolPath>$(WdkPackageRoot)\tools\bin\x64\</StampInfToolPath>
+    <WdkToolPath>$(WdkPackageRoot)\tools\bin\x64\</WdkToolPath>
+    
+    <!-- Disable signing for now to avoid certificate issues in CI -->
+    <SignMode>Off</SignMode>
   </PropertyGroup>
 </Project>

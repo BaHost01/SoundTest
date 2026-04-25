@@ -26,6 +26,11 @@ jobs:
       - name: Restore WDK NuGet Packages
         run: nuget restore packages.config -PackagesDirectory packages
 
+      - name: Debug - List NuGet Tools
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path "packages" -Recurse -Filter "stampinf.exe" | Select-Object FullName
+
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@v2
 
@@ -34,8 +39,8 @@ jobs:
           echo "⚠️ CRITICAL: ALWAYS ON BUILD TEST THE AUDIO DRIVER TO MAKE SURE THAT IT DOES NOT BSOD AND FUCK THE ENTIRE PC! ⚠️"
           
           # Build the C++ Driver Solution
-          # We specify the target to ensure the driver project is built.
-          msbuild Driver/VirtualMicDriver.sln /p:Configuration=Release /p:Platform=x64
+          # We explicitly pass some properties just in case Directory.Build.props is not enough
+          msbuild Driver/VirtualMicDriver.sln /p:Configuration=Release /p:Platform=x64 /p:SignMode=Off
 
       - name: Package Release Suite
         shell: pwsh
